@@ -1,13 +1,15 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./Pages/Home";
-import Second from "./pages/Second";
+import { useState } from "react";
+import Approuter from "./Approuter";
 
 function App() {
+  const [selectedCategory, setSelectedCategory] = useState("Local");
+
   return (
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/match/:id" element={<Second />} />
-      </Routes>
+    <BrowserRouter>
+      <Approuter selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
+    </BrowserRouter>
   );
 }
 

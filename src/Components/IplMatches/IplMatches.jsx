@@ -1,30 +1,39 @@
+// src/Components/IplMatches/IplMatches.jsx
 import React, { useEffect, useState } from "react";
+import Matchcard from "../matchcard/Matchcard";
 
-export default function IplMatches() {
+const API_KEY = import.meta.env.VITE_CRICAPI_KEY || "YOUR_OLD_API_KEY";
+
+export default function IplMatches({ selectedCategory }) {
   const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Dummy matches until we add real API
-    setMatches([
-      { id: 1, team1: "MI", team2: "CSK", date: "2025-04-10" },
-      { id: 2, team1: "RCB", team2: "KKR", date: "2025-04-12" },
-    ]);
-  }, []);
+    if (selectedCategory !== "IPL") return; // Only fetch IPL matches
+    setLoading(true);
+
+    fetch(`https://api.cricapi.com/v1/currentMatches?apikey=${API_KEY}&offset=0`)
+      .then((res) => res.json())
+      .then((data) => {
+        // Filter IPL matches only
+        const iplMatches = (data.data || []).filter(
+          (match) => match.name?.includes("IPL")
+        );
+        setMatches(iplMatches.slice(0, 5)); // Last 5 IPL matches
+      })
+      .catch((err) => console.error("Error fetching IPL matches:", err))
+      .finally(() => setLoading(false));
+  }, [selectedCategory]);
+
+  if (selectedCategory !== "IPL") return <div className="text-white">Select IPL to see matches</div>;
+  if (loading) return <div className="text-white">Loading IPL matches...</div>;
+  if (!matches.length) return <div className="text-white">No IPL matches found</div>;
 
   return (
-    <div>
-      <h2 className="text-xl font-bold text-white mb-4">IPL Matches 2025</h2>
-      {matches.length > 0 ? (
-        <ul>
-          {matches.map((match) => (
-            <li key={match.id} className="text-white mb-2">
-              {match.team1} vs {match.team2} - {match.date}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-gray-400">No matches found.</p>
-      )}
+    <div className="space-y-4">
+      {matches.map((match) => (
+        <Matchcard key={match.id} match={match} />
+      ))}
     </div>
   );
 }
